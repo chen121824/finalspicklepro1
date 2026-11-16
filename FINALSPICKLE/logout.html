@@ -1,0 +1,101 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logout - Finals 2026 Pickleball</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+<div id="loginPage" class="login-page">
+
+    <div class="login-card">
+
+        <div class="logo">🏓</div>
+
+        <h1>Finals 2026 Pickleball</h1>
+
+        <p class="subtitle">Are you sure you want to log out?</p>
+
+        <div class="logout-message">
+            You are about to leave your account.
+            Make sure you have saved your work.
+        </div>
+
+        <div class="logout-actions">
+
+            <button type="button"
+                    class="login-submit"
+                    onclick="logout()">
+                Yes, Log Out
+            </button>
+
+            <button type="button"
+                    class="cancel-btn"
+                    onclick="goBack()">
+                Cancel
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    function logout() {
+
+        sessionStorage.removeItem("pickleball_session");
+
+        sessionStorage.setItem(
+            "pickleball_logout_msg",
+            "You have been logged out successfully."
+        );
+
+        window.location.replace("login.html");
+    }
+
+    function goBack() {
+        window.location.href = "index.html";
+    }
+</script>
+
+<style>
+    .logout-message {
+        color: #666;
+        font-size: 14px;
+        line-height: 1.6;
+        margin: 20px 0 25px;
+    }
+
+    .logout-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .logout-actions button {
+        width: 100%;
+        cursor: pointer;
+    }
+
+    .cancel-btn {
+        padding: 13px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #f5f5f5;
+        color: #444;
+        font-size: 15px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+    .cancel-btn:hover {
+        background: #e8e8e8;
+    }
+</style>
+
+</body>
+</html>

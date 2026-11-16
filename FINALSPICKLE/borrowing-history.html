@@ -1,0 +1,691 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borrowing History | Pickleball Management System</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .history-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .history-stat {
+            background: var(--surface, #fff);
+            border: 1px solid var(--border, #e2e8f0);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .history-stat p {
+            color: var(--muted, #64748b);
+            font-size: 14px;
+            margin: 0 0 10px;
+        }
+
+        .history-stat h2 {
+            color: var(--text, #172554);
+            font-size: 27px;
+            margin: 0;
+        }
+
+        .history-stat small {
+            display: block;
+            color: var(--muted, #64748b);
+            margin-top: 6px;
+        }
+
+        .history-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .history-table-wrap table {
+            width: 100%;
+            min-width: 850px;
+            border-collapse: collapse;
+        }
+
+        .history-table-wrap th,
+        .history-table-wrap td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border, #e2e8f0);
+        }
+
+        .history-table-wrap th {
+            font-size: 12px;
+            color: var(--muted, #64748b);
+            white-space: nowrap;
+        }
+
+        .history-table-wrap td {
+            color: var(--text, #334155);
+            font-size: 14px;
+        }
+
+        .borrower-name {
+            font-weight: 600;
+            color: var(--text, #172554);
+        }
+
+        .history-date {
+            white-space: nowrap;
+            font-size: 13px;
+        }
+
+        .history-badge {
+            display: inline-block;
+            padding: 6px 11px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .history-badge.borrowed {
+            background: #fff1d6;
+            color: #a16207;
+        }
+
+        .history-badge.partial {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .history-badge.returned {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .history-empty {
+            text-align: center;
+            padding: 45px 20px;
+            color: var(--muted, #64748b);
+        }
+
+        .history-empty h3 {
+            color: var(--text, #172554);
+            margin-bottom: 8px;
+        }
+
+        .history-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .history-controls input,
+        .history-controls select {
+            padding: 11px 14px;
+            border: 1px solid var(--border, #cbd5e1);
+            border-radius: 8px;
+            background: var(--surface, #fff);
+            color: var(--text, #334155);
+            font-size: 14px;
+        }
+
+        .history-controls input {
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .history-controls select {
+            min-width: 170px;
+        }
+
+        .history-count {
+            color: var(--muted, #64748b);
+            font-size: 13px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 1000px) {
+            .history-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .history-stats {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .history-stat {
+                padding: 14px;
+            }
+
+            .history-stat h2 {
+                font-size: 22px;
+            }
+
+            .history-controls {
+                flex-direction: column;
+            }
+
+            .history-controls input,
+            .history-controls select {
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">🏓</div>
+            <div>
+                <h2>PicklePro</h2>
+                <small>Management System</small>
+            </div>
+        </div>
+
+        <nav>
+            <p class="nav-label">MAIN MENU</p>
+            <a href="dashboard.html">▦ Dashboard</a>
+            <a href="members.html">♙ Members</a>
+            <a href="inventory.html">▣ Inventory</a>
+            <a href="borrowing-history.html" class="active">📋 Borrowing History</a>
+            <a href="attendance.html">☑ Attendance</a>
+            <a href="reports.html">▥ Reports</a>
+
+            <p class="nav-label">PREFERENCES</p>
+            <a href="settings.html">⚙ Settings</a>
+            <a href="profile.html">♙ My Profile</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <p>Finals 2026</p>
+            <small>Pickleball Management System</small>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div>
+                <h2>Borrowing History</h2>
+                <p>Track all borrowed and returned inventory items.</p>
+            </div>
+
+            <div class="admin-info">
+                <button class="theme-btn" id="themeToggle">🌙</button>
+                <div class="admin-avatar">A</div>
+                <div>
+                    <strong>Administrator</strong>
+                    <small>System Admin</small>
+                </div>
+            </div>
+        </header>
+
+        <section class="page-content">
+
+            <!-- PAGE HEADING -->
+            <div class="page-heading">
+                <div>
+                    <h1>Borrowing Records</h1>
+                    <p>Monitor borrower transactions and returned equipment.</p>
+                </div>
+
+                <a href="inventory.html" class="primary-btn">
+                    Manage Inventory
+                </a>
+            </div>
+
+            <!-- STATISTICS -->
+            <div class="history-stats">
+
+                <div class="history-stat">
+                    <p>Total Records</p>
+                    <h2 id="totalRecords">0</h2>
+                    <small>All borrowing transactions</small>
+                </div>
+
+                <div class="history-stat">
+                    <p>Total Borrowed</p>
+                    <h2 id="totalBorrowed">0</h2>
+                    <small>Total units borrowed</small>
+                </div>
+
+                <div class="history-stat">
+                    <p>Total Returned</p>
+                    <h2 id="totalReturned">0</h2>
+                    <small>Total units returned</small>
+                </div>
+
+                <div class="history-stat">
+                    <p>Outstanding Items</p>
+                    <h2 id="totalOutstanding">0</h2>
+                    <small>Units not yet returned</small>
+                </div>
+
+            </div>
+
+            <!-- BORROWING HISTORY TABLE -->
+            <div class="content-card">
+
+                <div class="card-header">
+                    <div>
+                        <h3>Borrowing History List</h3>
+                        <p>View and search all borrowing transactions.</p>
+                    </div>
+                </div>
+
+                <!-- SEARCH AND FILTER -->
+                <div class="history-controls">
+
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search borrower or item name..."
+                    >
+
+                    <select id="statusFilter">
+                        <option value="All">All Status</option>
+                        <option value="Borrowed">Borrowed</option>
+                        <option value="Partially Returned">Partially Returned</option>
+                        <option value="Fully Returned">Fully Returned</option>
+                    </select>
+
+                </div>
+
+                <!-- TABLE -->
+                <div class="history-table-wrap">
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>DATE BORROWED</th>
+                                <th>BORROWER</th>
+                                <th>ITEM</th>
+                                <th>QUANTITY</th>
+                                <th>RETURNED</th>
+                                <th>REMAINING</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="historyTable"></tbody>
+                    </table>
+
+                </div>
+
+                <!-- EMPTY MESSAGE -->
+                <div class="history-empty" id="emptyMessage" style="display:none;">
+                    <h3>No borrowing records found</h3>
+                    <p>Borrowing transactions will appear here once an item is borrowed.</p>
+                </div>
+
+                <p class="history-count" id="historyCount">
+                    Showing 0 records
+                </p>
+
+            </div>
+
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="footer">
+            © 2026 PicklePro. Pickleball Management System.
+        </footer>
+
+    </main>
+</div>
+
+<script>
+
+    // LOCAL STORAGE
+    function readHistory() {
+
+        try {
+            const saved = localStorage.getItem("pickleBorrowingHistory");
+
+            if (!saved) {
+                return [];
+            }
+
+            const parsed = JSON.parse(saved);
+
+            return Array.isArray(parsed) ? parsed : [];
+
+        } catch (error) {
+
+            console.error("Unable to read borrowing history:", error);
+
+            return [];
+        }
+    }
+
+    let borrowingHistory = readHistory();
+
+    // NORMALIZE RECORDS
+    function normalizeHistory() {
+
+        borrowingHistory = borrowingHistory.map((record, index) => {
+
+            return {
+                ...record,
+                id: String(record.id || ("HISTORY-" + index)),
+                itemId: String(record.itemId || ""),
+                itemName: record.itemName || "Unknown Item",
+                borrower: record.borrower || "Previous Record",
+                quantity: Math.max(0, Number(record.quantity) || 0),
+                returnedQuantity: Math.min(
+                    Math.max(0, Number(record.quantity) || 0),
+                    Math.max(0, Number(record.returnedQuantity) || 0)
+                ),
+                borrowedAt: record.borrowedAt || new Date().toISOString()
+            };
+
+        });
+    }
+
+    normalizeHistory();
+
+    // SAVE HISTORY
+    function saveHistory() {
+
+        localStorage.setItem(
+            "pickleBorrowingHistory",
+            JSON.stringify(borrowingHistory)
+        );
+    }
+
+    // GET REMAINING QUANTITY
+    function getRemaining(record) {
+
+        return Math.max(
+            0,
+            Number(record.quantity) - Number(record.returnedQuantity || 0)
+        );
+    }
+
+    // GET STATUS
+    function getRecordStatus(record) {
+
+        const remaining = getRemaining(record);
+        const returned = Number(record.returnedQuantity || 0);
+
+        if (remaining === 0) {
+            return "Fully Returned";
+        }
+
+        if (returned > 0) {
+            return "Partially Returned";
+        }
+
+        return "Borrowed";
+    }
+
+    // ESCAPE HTML
+    function escapeHTML(value) {
+
+        return String(value).replace(/[&<>"']/g, char => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#039;"
+        })[char]);
+    }
+
+    // FORMAT DATE
+    function formatDate(dateValue) {
+
+        const date = new Date(dateValue);
+
+        if (isNaN(date.getTime())) {
+            return "Invalid date";
+        }
+
+        return date.toLocaleString([], {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+    }
+
+    // UPDATE STATISTICS
+    function updateStatistics() {
+
+        const totalRecords = borrowingHistory.length;
+
+        const totalBorrowed = borrowingHistory.reduce(
+            (sum, record) => sum + Number(record.quantity || 0),
+            0
+        );
+
+        const totalReturned = borrowingHistory.reduce(
+            (sum, record) => sum + Number(record.returnedQuantity || 0),
+            0
+        );
+
+        const totalOutstanding = borrowingHistory.reduce(
+            (sum, record) => sum + getRemaining(record),
+            0
+        );
+
+        document.getElementById("totalRecords").textContent =
+            totalRecords;
+
+        document.getElementById("totalBorrowed").textContent =
+            totalBorrowed;
+
+        document.getElementById("totalReturned").textContent =
+            totalReturned;
+
+        document.getElementById("totalOutstanding").textContent =
+            totalOutstanding;
+    }
+
+    // DISPLAY BORROWING HISTORY
+    function renderHistory() {
+
+        const table = document.getElementById("historyTable");
+
+        const search = document.getElementById("searchInput")
+            .value.trim().toLowerCase();
+
+        const selectedStatus =
+            document.getElementById("statusFilter").value;
+
+        table.innerHTML = "";
+
+        const filtered = borrowingHistory.filter(record => {
+
+            const borrower = String(record.borrower || "").toLowerCase();
+            const itemName = String(record.itemName || "").toLowerCase();
+            const itemId = String(record.itemId || "").toLowerCase();
+
+            const matchesSearch =
+                borrower.includes(search) ||
+                itemName.includes(search) ||
+                itemId.includes(search);
+
+            const matchesStatus =
+                selectedStatus === "All" ||
+                getRecordStatus(record) === selectedStatus;
+
+            return matchesSearch && matchesStatus;
+        });
+
+        // NEWEST RECORDS FIRST
+        filtered.sort((a, b) => {
+
+            return new Date(b.borrowedAt).getTime() -
+                   new Date(a.borrowedAt).getTime();
+
+        });
+
+        // EMPTY MESSAGE
+        document.getElementById("emptyMessage").style.display =
+            filtered.length === 0 ? "block" : "none";
+
+        // TABLE ROWS
+        filtered.forEach(record => {
+
+            const remaining = getRemaining(record);
+            const returned = Number(record.returnedQuantity || 0);
+            const status = getRecordStatus(record);
+
+            let badgeClass = "borrowed";
+
+            if (status === "Partially Returned") {
+                badgeClass = "partial";
+            }
+
+            if (status === "Fully Returned") {
+                badgeClass = "returned";
+            }
+
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>
+                    <span class="history-date">
+                        ${escapeHTML(formatDate(record.borrowedAt))}
+                    </span>
+                </td>
+
+                <td>
+                    <span class="borrower-name">
+                        ${escapeHTML(record.borrower)}
+                    </span>
+                </td>
+
+                <td>
+                    <strong>${escapeHTML(record.itemName)}</strong>
+                    <small style="display:block; color:var(--muted, #64748b);">
+                        ${escapeHTML(record.itemId)}
+                    </small>
+                </td>
+
+                <td>${Number(record.quantity)}</td>
+
+                <td>${returned}</td>
+
+                <td>
+                    <strong>${remaining}</strong>
+                </td>
+
+                <td>
+                    <span class="history-badge ${badgeClass}">
+                        ${status}
+                    </span>
+                </td>
+            `;
+
+            table.appendChild(row);
+
+        });
+
+        document.getElementById("historyCount").textContent =
+            "Showing " + filtered.length + " of " +
+            borrowingHistory.length + " records";
+
+        updateStatistics();
+    }
+
+    // SEARCH
+    document.getElementById("searchInput")
+        .addEventListener("input", renderHistory);
+
+    // FILTER
+    document.getElementById("statusFilter")
+        .addEventListener("change", renderHistory);
+
+    // THEME TOGGLE
+    document.getElementById("themeToggle")
+        .addEventListener("click", function() {
+
+            const isDark =
+                document.documentElement.getAttribute("data-theme") !== "dark";
+
+            document.documentElement.setAttribute(
+                "data-theme",
+                isDark ? "dark" : "light"
+            );
+
+            this.textContent = isDark ? "☀️" : "🌙";
+
+            localStorage.setItem(
+                "pickleballTheme",
+                isDark ? "dark" : "light"
+            );
+
+        });
+
+    // LOAD SAVED THEME
+    const savedTheme = localStorage.getItem("pickleballTheme") || "light";
+
+    document.documentElement.setAttribute("data-theme", savedTheme);
+
+    document.getElementById("themeToggle").textContent =
+        savedTheme === "dark" ? "☀️" : "🌙";
+
+    // REFRESH WHEN INVENTORY OR HISTORY CHANGES IN ANOTHER TAB
+    window.addEventListener("storage", function(event) {
+
+        if (
+            event.key === "pickleBorrowingHistory" ||
+            event.key === "pickleInventory"
+        ) {
+
+            borrowingHistory = readHistory();
+
+            normalizeHistory();
+
+            renderHistory();
+        }
+
+    });
+
+    // REFRESH WHEN RETURNING TO THIS PAGE
+    window.addEventListener("focus", function() {
+
+        borrowingHistory = readHistory();
+
+        normalizeHistory();
+
+        renderHistory();
+
+    });
+
+    // REFRESH WHEN PAGE BECOMES VISIBLE
+    document.addEventListener("visibilitychange", function() {
+
+        if (!document.hidden) {
+
+            borrowingHistory = readHistory();
+
+            normalizeHistory();
+
+            renderHistory();
+        }
+
+    });
+
+    // INITIAL DISPLAY
+    renderHistory();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,900 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance | Pickleball Management System</title>
+<link rel="stylesheet" href="style.css">
+
+<style>
+.rfid-card{margin:0 0 24px}
+.rfid-scanner-area{text-align:center;padding:30px 20px;margin-top:15px;border-radius:14px;background:var(--card-bg,#f8fafc)}
+.rfid-icon{font-size:44px;margin-bottom:8px}
+.rfid-scanner-area h2{margin:8px 0}
+.rfid-scanner-area p{color:#888;margin-bottom:18px}
+#rfidScanInput{width:min(100%,420px);box-sizing:border-box;padding:14px 16px;border:2px solid #16a36a;border-radius:10px;text-align:center;font-size:17px;outline:none}
+#rfidScanInput:focus{border-color:#087f50;box-shadow:0 0 0 4px rgba(22,163,106,.12)}
+.rfid-scanner-area small{display:block;margin-top:10px;color:#888}
+.rfid-feedback{max-width:420px;margin:18px auto 0;padding:12px;border-radius:9px;background:#e8f5ee;color:#16834e;font-weight:600}
+.rfid-feedback.error{background:#feecec;color:#c62828}
+.rfid-feedback.warning{background:#fff4db;color:#956000}
+.rfid-feedback.info{background:#eaf2ff;color:#2456a6}
+.rfid-status{display:inline-flex;align-items:center;gap:7px}
+.rfid-status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;background:#16a36a}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<aside class="sidebar">
+<div class="logo">
+<div class="logo-icon">🏓</div>
+<div>
+<h2>PicklePro</h2>
+<small>Management System</small>
+</div>
+</div>
+
+<nav>
+<p class="nav-label">MAIN MENU</p>
+<a href="dashboard.html">▦ Dashboard</a>
+<a href="members.html">♙ Members</a>
+<a href="inventory.html">▣ Inventory</a>
+<a href="attendance.html" class="active">☑ Attendance</a>
+<a href="reports.html">▥ Reports</a>
+
+<p class="nav-label">PREFERENCES</p>
+<a href="settings.html">⚙ Settings</a>
+<a href="profile.html">♙ My Profile</a>
+</nav>
+
+<div class="sidebar-bottom">
+<p>Finals 2026</p>
+<small>Pickleball Management System</small>
+</div>
+</aside>
+
+<main class="main">
+
+<header class="topbar">
+<div>
+<h2>Attendance Management</h2>
+<p>Monitor and manage member attendance records.</p>
+</div>
+
+<div class="admin-info">
+<button class="theme-btn" id="themeToggle">🌙</button>
+<div class="admin-avatar">A</div>
+<div>
+<strong>Administrator</strong>
+<small>System Admin</small>
+</div>
+</div>
+</header>
+
+<section class="page-content">
+
+<div class="page-heading">
+<div>
+<h1>Attendance Overview</h1>
+<p>Track member participation and attendance.</p>
+</div>
+<button class="primary-btn" onclick="openModal()">+ Record Attendance</button>
+</div>
+
+<!-- RFID SCANNER -->
+
+<div class="content-card rfid-card">
+
+<div class="card-header">
+<div>
+<h3>🏷️ RFID Attendance Scanner</h3>
+<p>Tap once to check in and tap the same RFID card again to check out.</p>
+</div>
+
+<span class="badge success rfid-status">
+<span class="rfid-status-dot"></span> USB Reader Mode
+</span>
+</div>
+
+<div class="rfid-scanner-area">
+<div class="rfid-icon">📡</div>
+<h2>Ready to Scan</h2>
+<p>Place your RFID card near the USB reader.</p>
+
+<input
+type="text"
+id="rfidScanInput"
+placeholder="Waiting for RFID card..."
+autocomplete="off"
+autofocus
+>
+
+<small>Keep this field active while scanning.</small>
+
+<div id="rfidFeedback" class="rfid-feedback">
+Connect the USB reader, click the scan box, then scan a registered card.
+</div>
+</div>
+
+</div>
+
+<!-- STATISTICS -->
+
+<div class="stats">
+
+<div class="stat-card">
+<div class="stat-icon">📋</div>
+<p>Total Records</p>
+<h2 id="totalRecords">0</h2>
+<small>All attendance records</small>
+</div>
+
+<div class="stat-card">
+<div class="stat-icon">✅</div>
+<p>Present</p>
+<h2 id="presentCount">0</h2>
+<small>Members present</small>
+</div>
+
+</div>
+
+<!-- ATTENDANCE RECORDS -->
+
+<div class="content-card">
+
+<div class="card-header">
+<div>
+<h3>Attendance Records</h3>
+<p>View and manage member attendance.</p>
+</div>
+</div>
+
+<div class="table-controls">
+
+<input
+type="text"
+id="searchInput"
+placeholder="Search member name or ID..."
+>
+
+<input
+type="date"
+id="dateFilter"
+title="Leave blank to show all saved records."
+>
+
+</div>
+
+<div class="table-wrap">
+
+<table>
+<thead>
+<tr>
+<th>RECORD ID</th>
+<th>MEMBER NAME</th>
+<th>DATE</th>
+<th>CHECK-IN</th>
+<th>CHECK-OUT</th>
+<th>NOTES</th>
+<th>ACTIONS</th>
+</tr>
+</thead>
+
+<tbody id="attendanceTable"></tbody>
+</table>
+
+</div>
+
+<div class="empty" id="emptyMessage" style="display:none;">
+<h3>No attendance records found</h3>
+<p>Try changing your filters or add a new attendance record.</p>
+</div>
+
+</div>
+
+</section>
+
+<footer class="footer">
+© 2026 PicklePro. Pickleball Management System.
+</footer>
+
+</main>
+</div>
+
+<!-- ADD / EDIT ATTENDANCE MODAL -->
+
+<div class="modal" id="attendanceModal">
+
+<div class="modal-content">
+
+<div class="modal-header">
+<div>
+<h2 id="modalTitle">Record Attendance</h2>
+<p>Enter the attendance information below.</p>
+</div>
+
+<button class="close-btn" onclick="closeModal()">×</button>
+</div>
+
+<form id="attendanceForm">
+
+<div class="form-group">
+<label>Record ID</label>
+<input type="text" id="recordId" placeholder="Example: ATT-001" required>
+</div>
+
+<div class="form-group">
+<label>Member Name</label>
+<input type="text" id="memberName" placeholder="Enter member name" required>
+</div>
+
+<div class="form-group">
+<label>Member ID</label>
+<input type="text" id="memberId" placeholder="Example: MEM-001" required>
+</div>
+
+<div class="form-group">
+<label>Attendance Date</label>
+<input type="date" id="attendanceDate" required>
+</div>
+
+<div class="form-group">
+<label>Time</label>
+<input type="time" id="attendanceTime" required>
+</div>
+
+<div class="form-group">
+<label>Notes</label>
+<input type="text" id="attendanceNotes" placeholder="Optional notes">
+</div>
+
+<div class="modal-actions">
+<button type="button" class="secondary-btn" onclick="closeModal()">Cancel</button>
+<button type="submit" class="primary-btn">Save Record</button>
+</div>
+
+</form>
+</div>
+</div>
+
+<!-- VIEW MODAL -->
+
+<div class="modal" id="viewModal">
+
+<div class="modal-content">
+
+<div class="modal-header">
+<h2>Attendance Details</h2>
+<button class="close-btn" onclick="closeViewModal()">×</button>
+</div>
+
+<div id="attendanceDetails"></div>
+
+<div class="modal-actions">
+<button class="secondary-btn" onclick="closeViewModal()">Close</button>
+</div>
+
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+// GET TODAY'S DATE
+const today = new Date().toLocaleDateString("en-CA");
+
+// LOAD SAVED ATTENDANCE
+let attendance = JSON.parse(localStorage.getItem("pickleAttendance")) || [];
+
+let editIndex = null;
+
+
+// SAVE ATTENDANCE PERMANENTLY IN THIS BROWSER
+function saveAttendance(){
+
+localStorage.setItem(
+"pickleAttendance",
+JSON.stringify(attendance)
+);
+
+}
+
+
+// UPDATE STATISTICS
+function updateStatistics(){
+
+document.getElementById("totalRecords").textContent =
+attendance.length;
+
+document.getElementById("presentCount").textContent =
+attendance.length;
+
+}
+
+
+// PROTECT DISPLAYED TEXT
+function escapeHTML(value){
+
+return String(value).replace(/[&<>"']/g,char=>({
+
+"&":"&amp;",
+"<":"&lt;",
+">":"&gt;",
+'"':"&quot;",
+"'":"&#039;"
+
+})[char]);
+
+}
+
+
+// DISPLAY ATTENDANCE RECORDS
+function renderAttendance(){
+
+const table = document.getElementById("attendanceTable");
+
+const search =
+document.getElementById("searchInput").value.toLowerCase();
+
+const date =
+document.getElementById("dateFilter").value;
+
+table.innerHTML = "";
+
+const filtered = attendance.filter(item=>{
+
+const matchesSearch =
+item.member.toLowerCase().includes(search) ||
+item.memberId.toLowerCase().includes(search) ||
+item.id.toLowerCase().includes(search);
+
+const matchesDate =
+date === "" || item.date === date;
+
+return matchesSearch && matchesDate;
+
+});
+
+document.getElementById("emptyMessage").style.display =
+filtered.length === 0 ? "block" : "none";
+
+filtered.forEach(item=>{
+
+const index = attendance.indexOf(item);
+
+table.innerHTML += `
+
+<tr>
+
+<td>${escapeHTML(item.id)}</td>
+
+<td>
+<strong>${escapeHTML(item.member)}</strong>
+<small>${escapeHTML(item.memberId)}</small>
+</td>
+
+<td>${escapeHTML(item.date)}</td>
+
+<td>${escapeHTML(item.time || "-")}</td>
+
+<td>${escapeHTML(item.checkOutTime || "-")}</td>
+
+<td>${escapeHTML(item.notes || "-")}</td>
+
+<td>
+<button class="mini-btn" onclick="viewRecord(${index})">View</button>
+<button class="mini-btn" onclick="editRecord(${index})">Edit</button>
+</td>
+
+</tr>
+
+`;
+
+});
+
+updateStatistics();
+
+}
+
+
+// OPEN ADD MODAL
+function openModal(){
+
+editIndex = null;
+
+document.getElementById("attendanceForm").reset();
+
+document.getElementById("modalTitle").textContent =
+"Record Attendance";
+
+document.getElementById("attendanceDate").value = today;
+
+document.getElementById("attendanceTime").value =
+new Date().toTimeString().slice(0,5);
+
+document.getElementById("recordId").disabled = false;
+
+document.getElementById("attendanceModal").classList.add("show");
+
+}
+
+
+// CLOSE ADD MODAL
+function closeModal(){
+
+document.getElementById("attendanceModal").classList.remove("show");
+
+}
+
+
+// ADD OR UPDATE RECORD
+document.getElementById("attendanceForm").addEventListener("submit",function(e){
+
+e.preventDefault();
+
+const record = {
+
+id:document.getElementById("recordId").value.trim(),
+
+member:document.getElementById("memberName").value.trim(),
+
+memberId:document.getElementById("memberId").value.trim(),
+
+date:document.getElementById("attendanceDate").value,
+
+time:document.getElementById("attendanceTime").value,
+
+checkOutTime:editIndex!==null
+? (attendance[editIndex].checkOutTime || "")
+: "",
+
+notes:document.getElementById("attendanceNotes").value.trim()
+
+};
+
+if(!record.id || !record.member || !record.memberId || !record.date || !record.time){
+
+showToast("Please complete all required fields.");
+
+return;
+
+}
+
+if(editIndex===null){
+
+const duplicate = attendance.some(item=>
+item.id.toLowerCase() === record.id.toLowerCase()
+);
+
+if(duplicate){
+
+showToast("Record ID already exists.");
+
+return;
+
+}
+
+attendance.push(record);
+
+showToast("Attendance recorded successfully!");
+
+}else{
+
+attendance[editIndex] = record;
+
+showToast("Attendance updated successfully!");
+
+}
+
+saveAttendance();
+
+renderAttendance();
+
+closeModal();
+
+});
+
+
+// VIEW RECORD
+function viewRecord(index){
+
+const item = attendance[index];
+
+document.getElementById("attendanceDetails").innerHTML = `
+
+<div class="details-grid">
+
+<p><strong>Record ID:</strong> ${escapeHTML(item.id)}</p>
+
+<p><strong>Member Name:</strong> ${escapeHTML(item.member)}</p>
+
+<p><strong>Member ID:</strong> ${escapeHTML(item.memberId)}</p>
+
+<p><strong>Date:</strong> ${escapeHTML(item.date)}</p>
+
+<p><strong>Check-in Time:</strong> ${escapeHTML(item.time || "-")}</p>
+
+<p><strong>Check-out Time:</strong> ${escapeHTML(item.checkOutTime || "Not checked out yet")}</p>
+
+<p><strong>Notes:</strong> ${escapeHTML(item.notes || "-")}</p>
+
+</div>
+
+`;
+
+document.getElementById("viewModal").classList.add("show");
+
+}
+
+
+// CLOSE VIEW MODAL
+function closeViewModal(){
+
+document.getElementById("viewModal").classList.remove("show");
+
+}
+
+
+// EDIT RECORD
+function editRecord(index){
+
+editIndex = index;
+
+const item = attendance[index];
+
+document.getElementById("modalTitle").textContent =
+"Edit Attendance";
+
+document.getElementById("recordId").value = item.id;
+
+document.getElementById("recordId").disabled = true;
+
+document.getElementById("memberName").value = item.member;
+
+document.getElementById("memberId").value = item.memberId;
+
+document.getElementById("attendanceDate").value = item.date;
+
+document.getElementById("attendanceTime").value = item.time;
+
+document.getElementById("attendanceNotes").value = item.notes || "";
+
+document.getElementById("attendanceModal").classList.add("show");
+
+}
+
+
+// ATTENDANCE RECORDS CANNOT BE DELETED FROM THIS PAGE.
+
+
+// TOAST NOTIFICATION
+function showToast(message){
+
+const toast = document.getElementById("toast");
+
+toast.textContent = message;
+
+toast.classList.add("show");
+
+setTimeout(()=>{
+
+toast.classList.remove("show");
+
+},2500);
+
+}
+
+
+// SEARCH AND FILTER
+document.getElementById("searchInput").addEventListener("input",renderAttendance);
+
+document.getElementById("dateFilter").addEventListener("change",renderAttendance);
+
+
+// DARK MODE TOGGLE
+document.getElementById("themeToggle").addEventListener("click",function(){
+
+document.body.classList.toggle("dark-mode");
+
+this.textContent =
+document.body.classList.contains("dark-mode") ? "☀️" : "🌙";
+
+});
+
+
+// RFID ATTENDANCE
+const rfidInput = document.getElementById("rfidScanInput");
+
+const rfidFeedback = document.getElementById("rfidFeedback");
+
+function showRFIDMessage(message,type="success"){
+
+rfidFeedback.textContent = message;
+
+rfidFeedback.className = "rfid-feedback";
+
+if(type!=="success"){
+
+rfidFeedback.classList.add(type);
+
+}
+
+}
+
+
+// GET MEMBER RFID
+function getMemberRFID(member){
+
+return String(
+
+member.rfid ||
+member.UID ||
+member.uid ||
+member.rfidNumber ||
+member.cardId ||
+member.cardUID ||
+""
+
+).trim();
+
+}
+
+
+// GET MEMBER NAME
+function getMemberName(member){
+
+return member.name ??
+member.fullName ??
+member.memberName ??
+member.full_name ??
+"";
+
+}
+
+
+// GET MEMBER ID
+function getMemberId(member){
+
+return member.memberId ??
+member.memberID ??
+member.id ??
+member.code ??
+"";
+
+}
+
+
+// FIND MEMBER USING RFID
+function findMemberByRFID(scannedUID){
+
+let members = [];
+
+try{
+
+members = JSON.parse(
+localStorage.getItem("pickleballMembers") || "[]"
+);
+
+}catch(error){
+
+console.error("Error reading members:",error);
+
+return null;
+
+}
+
+if(!Array.isArray(members)) return null;
+
+const scanned = String(scannedUID).trim();
+
+return members.find(member=>{
+
+const registeredUID = getMemberRFID(member);
+
+return registeredUID === scanned;
+
+}) || null;
+
+}
+
+
+// GET LOCAL DATE
+function getLocalDate(dateObject=new Date()){
+
+const year = dateObject.getFullYear();
+
+const month = String(dateObject.getMonth()+1).padStart(2,"0");
+
+const day = String(dateObject.getDate()).padStart(2,"0");
+
+return `${year}-${month}-${day}`;
+
+}
+
+
+// PROCESS RFID SCAN
+function processRFIDScan(rawUID){
+
+const scannedUID = String(rawUID || "").trim();
+
+if(!scannedUID){
+
+showRFIDMessage("No RFID number was received. Please scan again.","error");
+
+return;
+
+}
+
+const member = findMemberByRFID(scannedUID);
+
+if(!member){
+
+showRFIDMessage(
+
+`Unregistered RFID card (${scannedUID}). Add this card to a member in the Members page first.`,
+
+"error"
+
+);
+
+showToast("RFID card is not registered.");
+
+return;
+
+}
+
+const memberName = String(getMemberName(member)).trim();
+
+const memberId = String(getMemberId(member)).trim();
+
+if(!memberName || !memberId){
+
+showRFIDMessage(
+
+"This RFID card matched a member, but the member name or ID is missing.",
+
+"error"
+
+);
+
+return;
+
+}
+
+const now = new Date();
+
+const scanDate = getLocalDate(now);
+
+const scanTime = now.toTimeString().slice(0,5);
+
+
+// FIND THE MOST RECENT OPEN VISIT FOR THIS MEMBER TODAY.
+// COMPLETED RECORDS ARE NEVER OVERWRITTEN.
+
+const existingRecord = [...attendance].reverse().find(record=>
+
+String(record.memberId) === memberId &&
+record.date === scanDate &&
+!record.checkOutTime
+
+);
+
+
+if(existingRecord){
+
+// CHECK OUT
+existingRecord.checkOutTime = scanTime;
+
+saveAttendance();
+
+renderAttendance();
+
+showRFIDMessage(
+
+`Checked out successfully: ${memberName}. Your attendance visit has been saved.`
+
+);
+
+showToast("Check-out saved!");
+
+return;
+
+}
+
+
+// CREATE A NEW CHECK-IN RECORD.
+// EVERY NEW VISIT IS SAVED SEPARATELY.
+
+const newRecord = {
+
+id:"ATT-" + Date.now() + "-" +
+Math.random().toString(36).slice(2,6).toUpperCase(),
+
+member:memberName,
+
+memberId:memberId,
+
+date:scanDate,
+
+time:scanTime,
+
+checkOutTime:"",
+
+notes:"RFID check-in"
+
+};
+
+attendance.push(newRecord);
+
+saveAttendance();
+
+renderAttendance();
+
+showRFIDMessage(
+
+`Checked in successfully: ${memberName}. A new attendance record has been saved. Tap again when leaving.`
+
+);
+
+showToast("New attendance visit saved!");
+
+}
+
+
+// USB RFID READER
+rfidInput.addEventListener("keydown",function(event){
+
+if(event.key === "Enter"){
+
+event.preventDefault();
+
+const scannedUID = rfidInput.value;
+
+rfidInput.value = "";
+
+processRFIDScan(scannedUID);
+
+}
+
+});
+
+
+// ACTIVATE SCANNER
+rfidInput.addEventListener("click",function(){
+
+showRFIDMessage("Scanner input is active. Scan an RFID card.","info");
+
+});
+
+
+document.querySelector(".rfid-scanner-area").addEventListener("click",function(event){
+
+if(event.target !== rfidInput){
+
+rfidInput.focus();
+
+}
+
+});
+
+
+// INITIAL SCANNER FOCUS
+window.addEventListener("load",function(){
+
+rfidInput.focus();
+
+});
+
+
+// INITIAL DISPLAY
+renderAttendance();
+
+</script>
+
+</body>
+</html>
